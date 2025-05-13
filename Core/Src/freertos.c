@@ -4,16 +4,6 @@
   * File Name          : freertos.c
   * Description        : Code for freertos applications
   ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
   */
 /* USER CODE END Header */
 
@@ -21,6 +11,14 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "main.h"
+#include <string.h>
+#include <stdio.h>                   
+#include "stm32f4xx_hal_adc.h"        
+
+extern UART_HandleTypeDef huart6;
+extern UART_HandleTypeDef huart2;
+extern ADC_HandleTypeDef hadc1;      
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -64,16 +62,27 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackTy
   *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
   *ppxIdleTaskStackBuffer = &xIdleStack[0];
   *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
-  /* place for user code */
 }
 /* USER CODE END GET_IDLE_TASK_MEMORY */
 
-/* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 void StartDefaultTask(void *argument){
-  for(;;){
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-    vTaskDelay(pdMS_TO_TICKS(300));
+  
+  char msg[64];
+  uint32_t adc_val = 0;
+
+  for(;;)
+  {
+    HAL_ADC_Start(&hadc1);
+    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+    adc_val = HAL_ADC_GetValue(&hadc1);
+
+    // Optional: convert to voltage: V = (adc_val / 4095.0) * 3.3
+
+    snprintf(msg, sizeof(msg), "pH ADC Raw: %lu\r\n", adc_val);
+    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY); //Change to huart6
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 
