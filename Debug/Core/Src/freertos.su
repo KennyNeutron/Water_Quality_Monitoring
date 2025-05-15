@@ -1,3 +1,5 @@
 ../Core/Src/freertos.c:58:6:vApplicationGetIdleTaskMemory	24	static
 ../Core/Src/freertos.c:68:13:PumpCycleOnce	8	static
-../Core/Src/freertos.c:83:6:StartDefaultTask	88	static
+../Core/Src/freertos.c:84:13:phSensor_Main	80	static
+../Core/Src/freertos.c:98:13:doSensor_Main	96	static
+../Core/Src/freertos.c:131:6:StartDefaultTask	16	static
