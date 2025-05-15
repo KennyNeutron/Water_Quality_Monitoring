@@ -11,18 +11,16 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "main.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
 #include <string.h>
 #include <stdio.h>                   
 #include "stm32f4xx_hal_adc.h"        
 
 extern UART_HandleTypeDef huart6;
 extern UART_HandleTypeDef huart2;
-extern ADC_HandleTypeDef hadc1;      
-
-
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
+extern ADC_HandleTypeDef hadc1;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,9 +63,26 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackTy
 }
 /* USER CODE END GET_IDLE_TASK_MEMORY */
 
+/* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+static void PumpCycleOnce(void){
+  HAL_UART_Transmit(&huart2, (uint8_t*)"Pump One\r\n", strlen("Pump One\r\n"), HAL_MAX_DELAY);
+
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); //ON Pump 1 (active low)
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); //ON Pump 2 (active low)
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET); //ON Pump3 (active high)
+
+  vTaskDelay(pdMS_TO_TICKS(3000)); //delay 3s for now
+
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET); //OFF Pump 1 (active low)
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_SET); //OFF Pump 2 (active low)
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET); //OFF Pump3 (active high)
+}
+
+
 void StartDefaultTask(void *argument){
-  
+  PumpCycleOnce();
+
   char msg[64];
   uint32_t adc_val = 0;
 
